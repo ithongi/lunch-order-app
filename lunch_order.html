@@ -860,18 +860,18 @@
     try {
       // Send each student order to Google Sheets
       for (const s of complete) {
-        const payload = encodeURIComponent(JSON.stringify({
-            batchId:     batchId,
-            studentName: s.name,
-            grade:       s.grade,
-            teacher:     s.teacher,
-            meal:        s.meal.name,
-            side:        s.side,
-            total:       s.meal.price
-          }));
-          await fetch(APPS_SCRIPT_URL + "?payload=" + payload, {
-            method: "GET",
-            mode:   "no-cors"
+        await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              batchId:     batchId,
+              studentName: s.name,
+              grade:       s.grade,
+              teacher:     s.teacher,
+              meal:        s.meal.name,
+              side:        s.side,
+              total:       s.meal.price
+            })
           });
       }
 
@@ -898,7 +898,8 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
 
     } catch (err) {
-      showToast("Connection error — please try again.");
+      showToast("Could not save order. Check your internet connection and try again.");
+      console.error('Fetch error:', err);
     } finally {
       btn.classList.remove("loading");
       btn.disabled = false;
