@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Lunch Order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #185FA5;
+      --blue-light: #E6F1FB;
+      --blue-mid: #378ADD;
+      --blue-dark: #0C447C;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --amber: #D97706;
+      --amber-light: #FEF3C7;
+      --red: #E24B4A;
+      --red-light: #FCEBEB;
+      --bg: #F7F5F0;
+      --surface: #FFFFFF;
+      --surface2: #F1EFE8;
+      --border: rgba(0,0,0,0.09);
+      --border-strong: rgba(0,0,0,0.18);
+      --text: #1A1A18;
+      --text-muted: #6B6A65;
+      --text-hint: #A09F9A;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem 5rem;
+    }
+
+    .page { max-width: 600px; margin: 0 auto; }
+
+    /* ─── HEADER ─── */
+    .site-header { text-align: center; margin-bottom: 2rem; }
+    .logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: 40px; padding: 7px 18px 7px 12px; margin-bottom: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .logo-text { font-family: 'DM Serif Display', serif; font-size: 15px; color: var(--text); }
+    .site-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 34px; font-weight: 400; line-height: 1.2; color: var(--text);
+    }
+    .site-header p { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+
+    /* ─── CONFIG BANNER ─── */
+    .config-banner {
+      background: var(--amber-light); border: 1px solid #FCD34D;
+      border-radius: var(--radius-md); padding: 12px 16px;
+      margin-bottom: 1.25rem; font-size: 13px; color: #92400E;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .config-banner.hidden { display: none; }
+    .config-banner strong { display: block; margin-bottom: 2px; font-size: 13px; }
+
+    /* ─── STEP INDICATOR ─── */
+    .steps-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; margin-bottom: 2rem; background: var(--surface);
+      border: 0.5px solid var(--border); border-radius: 40px;
+      padding: 6px 8px; box-shadow: var(--shadow);
+    }
+    .step-item {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 12px; border-radius: 30px;
+      font-size: 13px; color: var(--text-hint); font-weight: 500;
+      transition: all 0.2s;
+    }
+    .step-item.active { background: var(--blue); color: white; }
+    .step-item.done { color: var(--green); }
+    .step-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--surface2); display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--text-hint); flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .step-item.active .step-dot { background: rgba(255,255,255,0.25); color: white; }
+    .step-item.done .step-dot { background: var(--green-light); color: var(--green); }
+    .step-connector { width: 20px; height: 1px; background: var(--border); flex-shrink: 0; }
+
+    /* ─── CARDS ─── */
+    .card {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-hint); margin-bottom: 1rem;
+    }
+
+    /* ─── STUDENT TABS ─── */
+    .students-nav {
+      display: flex; gap: 8px; align-items: center;
+      flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .student-tab {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 30px;
+      border: 1.5px solid var(--border);
+      background: var(--surface); cursor: pointer;
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      transition: all 0.15s; user-select: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .student-tab:hover { border-color: var(--border-strong); }
+    .student-tab.active {
+      background: var(--blue); border-color: var(--blue); color: white;
+    }
+    .student-tab.complete {
+      border-color: var(--green); color: var(--green); background: var(--green-light);
+    }
+    .student-tab.complete.active {
+      background: var(--green); border-color: var(--green); color: white;
+    }
+    .tab-check { font-size: 11px; }
+    .remove-tab {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+      font-size: 10px; line-height: 1; cursor: pointer; flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .remove-tab:hover { background: rgba(0,0,0,0.2); }
+    .student-tab.active .remove-tab { background: rgba(255,255,255,0.25); }
+    .student-tab.active .remove-tab:hover { background: rgba(255,255,255,0.4); }
+    .add-student-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 30px;
+      border: 1.5px dashed var(--border-strong);
+      background: transparent; cursor: pointer;
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+    }
+    .add-student-btn:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+
+    /* ─── MEAL GRID ─── */
+    .meal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (max-width: 480px) { .meal-grid { grid-template-columns: 1fr; } }
+    .meal-card {
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      padding: 1rem; cursor: pointer; position: relative;
+      background: var(--surface); user-select: none;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    }
+    .meal-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+    .meal-card:active { transform: translateY(0); }
+    .meal-card.selected { border: 2px solid var(--blue-mid); background: var(--blue-light); }
+    .check-badge {
+      position: absolute; top: 8px; right: 8px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--blue-mid); display: none;
+      align-items: center; justify-content: center;
+    }
+    .meal-card.selected .check-badge { display: flex; }
+    .check-badge svg { width: 11px; height: 11px; stroke: white; stroke-width: 2.5; fill: none; }
+    .meal-emoji { font-size: 26px; margin-bottom: 8px; display: block; }
+    .meal-name { font-size: 13px; font-weight: 600; line-height: 1.3; margin-bottom: 3px; }
+    .meal-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+    .meal-price { font-size: 16px; font-weight: 600; color: var(--blue); margin-top: 8px; }
+
+    /* ─── SIDE OPTIONS ─── */
+    .side-options { display: flex; gap: 10px; }
+    .side-btn {
+      flex: 1; padding: 11px 14px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); cursor: pointer;
+      font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text);
+      display: flex; align-items: center; gap: 8px; user-select: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .side-btn:hover { border-color: var(--border-strong); }
+    .side-btn.selected {
+      border: 2px solid var(--blue-mid); background: var(--blue-light);
+      font-weight: 500; color: var(--blue-dark);
+    }
+
+    /* ─── INCLUDED ─── */
+    .included-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .included-pill {
+      background: var(--surface2); border: 0.5px solid var(--border);
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 12px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    /* ─── FORM FIELDS ─── */
+    .field-group { margin-bottom: 1rem; }
+    .field-group:last-child { margin-bottom: 0; }
+    .field-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 5px; }
+    .field-group input, .field-group select {
+      width: 100%; padding: 10px 13px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 15px; font-family: 'DM Sans', sans-serif;
+      background: var(--surface); color: var(--text);
+      appearance: none; -webkit-appearance: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field-group input:focus, .field-group select:focus {
+      outline: none; border-color: var(--blue-mid);
+      box-shadow: 0 0 0 3px rgba(55,138,221,0.15);
+    }
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: ''; position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 5px solid transparent; border-right: 5px solid transparent;
+      border-top: 6px solid var(--text-muted); pointer-events: none;
+    }
+    .error-msg { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
+    .error-msg.show { display: block; }
+
+    /* ─── SAVE STUDENT BUTTON ─── */
+    .save-student-btn {
+      width: 100%; padding: 13px;
+      background: var(--blue-light); color: var(--blue-dark);
+      border: 1.5px solid var(--blue-mid); border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: background 0.15s; margin-top: 1rem;
+    }
+    .save-student-btn:hover { background: #D0E8F8; }
+
+    /* ─── SCREENS ─── */
+    #form-screen, #summary-screen, #success-screen { display: none; }
+    #form-screen { display: block; }
+
+    /* ─── ORDER SUMMARY SCREEN ─── */
+    .summary-header { text-align: center; margin-bottom: 1.75rem; }
+    .summary-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px; font-weight: 400; margin-bottom: 6px;
+    }
+    .summary-header p { font-size: 14px; color: var(--text-muted); }
+
+    .student-order-card {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); margin-bottom: 10px;
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .soc-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-bottom: 0.5px solid var(--border);
+      background: var(--surface2);
+    }
+    .soc-name { font-size: 15px; font-weight: 600; }
+    .soc-meta { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .soc-price { font-size: 17px; font-weight: 600; color: var(--blue); }
+    .soc-body { padding: 12px 18px; }
+    .soc-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; padding: 4px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .soc-row:last-child { border-bottom: none; }
+    .soc-row span:first-child { color: var(--text-muted); }
+    .soc-row span:last-child { font-weight: 500; }
+
+    .order-total-card {
+      background: var(--blue); color: white;
+      border-radius: var(--radius-lg); padding: 18px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem; box-shadow: 0 4px 20px rgba(24,95,165,0.3);
+    }
+    .otc-label { font-size: 14px; opacity: 0.85; margin-bottom: 3px; }
+    .otc-count { font-size: 13px; opacity: 0.65; }
+    .otc-amount { font-family: 'DM Serif Display', serif; font-size: 36px; font-weight: 400; }
+
+    .action-row { display: flex; gap: 10px; margin-top: 1rem; }
+    .back-btn {
+      flex: 1; padding: 13px;
+      background: transparent; color: var(--text-muted);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .back-btn:hover { border-color: var(--border-strong); color: var(--text); }
+    .pay-btn {
+      flex: 2; padding: 13px;
+      background: var(--blue); color: white; border: none;
+      border-radius: var(--radius-md); font-size: 15px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .pay-btn:hover:not(:disabled) { background: var(--blue-dark); }
+    .pay-btn:active:not(:disabled) { transform: scale(0.99); }
+    .pay-btn:disabled { background: var(--text-hint); cursor: not-allowed; }
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: none; flex-shrink: 0;
+    }
+    .pay-btn.loading .spinner { display: block; }
+
+    /* ─── SUCCESS SCREEN ─── */
+    .success-wrap { text-align: center; padding: 2rem 0 1rem; }
+    .success-circle {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+    .success-circle svg { width: 28px; height: 28px; stroke: var(--green); stroke-width: 2.5; fill: none; }
+    .success-wrap h2 { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; margin-bottom: 6px; }
+    .success-wrap p { font-size: 14px; color: var(--text-muted); }
+
+    .final-receipt {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-top: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .fr-title {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-hint); margin-bottom: 1rem;
+    }
+    .fr-student { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 0.5px solid var(--border); }
+    .fr-student:last-of-type { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .fr-student-name { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+    .fr-row { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; color: var(--text-muted); }
+    .fr-row span:last-child { color: var(--text); font-weight: 500; }
+    .fr-total {
+      display: flex; justify-content: space-between;
+      font-size: 16px; font-weight: 600; padding-top: 14px;
+      margin-top: 14px; border-top: 0.5px solid var(--border);
+    }
+    .fr-total span:last-child { color: var(--blue); }
+    .sheets-badge {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--green-light); border-radius: var(--radius-sm);
+      padding: 8px 12px; margin-top: 12px; font-size: 13px;
+      color: var(--green); font-weight: 500;
+    }
+
+    .new-order-btn {
+      width: 100%; padding: 13px;
+      background: transparent; color: var(--blue);
+      border: 1.5px solid var(--blue); border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; margin-top: 1rem; transition: background 0.15s;
+    }
+    .new-order-btn:hover { background: var(--blue-light); }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--red); color: white;
+      padding: 11px 20px; border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 500;
+      transition: transform 0.3s ease; z-index: 100; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .animate-in { animation: fadeUp 0.3s ease both; }
+
+    .divider { border: none; border-top: 0.5px solid var(--border); margin: 1.25rem 0; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══════════════════════════════════════
+       SCREEN 1: ORDER FORM
+  ══════════════════════════════════════ -->
+  <div id="form-screen">
+
+    <header class="site-header animate-in">
+      <div class="logo">
+        <span>🍽</span>
+        <span class="logo-text">School Lunch</span>
+      </div>
+      <h1>Lunch order</h1>
+      <p>Add each student, then review and pay</p>
+    </header>
+
+    <!-- Config banner -->
+    <div class="config-banner animate-in" id="config-banner">
+      <span>⚠️</span>
+      <div>
+        <strong>Setup required</strong>
+        Paste your Google Apps Script Web App URL into <code>APPS_SCRIPT_URL</code> in the &lt;script&gt; section. See SETUP.txt for instructions.
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps-bar animate-in">
+      <div class="step-item active" id="step1">
+        <div class="step-dot">1</div> Add students
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="step2">
+        <div class="step-dot">2</div> Review order
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="step3">
+        <div class="step-dot">3</div> Pay
+      </div>
+    </div>
+
+    <!-- Student tabs -->
+    <div class="students-nav" id="students-nav"></div>
+
+    <!-- Student form card -->
+    <div class="card animate-in" id="student-form-card">
+
+      <!-- Meal selection -->
+      <p class="card-title">Choose a meal</p>
+      <div class="meal-grid" id="meal-grid">
+        <div class="meal-card" data-meal="Hot dog meal" data-price="6" onclick="selectMeal(this)">
+          <div class="check-badge"><svg viewBox="0 0 12 12"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
+          <span class="meal-emoji">🌭</span>
+          <div class="meal-name">Hot dog meal</div>
+          <div class="meal-desc">Hot dog · cookie · juice</div>
+          <div class="meal-price">$6.00</div>
+        </div>
+        <div class="meal-card" data-meal="Nacho meal" data-price="6" onclick="selectMeal(this)">
+          <div class="check-badge"><svg viewBox="0 0 12 12"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
+          <span class="meal-emoji">🧀</span>
+          <div class="meal-name">Nacho meal</div>
+          <div class="meal-desc">Nachos · cookie · juice</div>
+          <div class="meal-price">$6.00</div>
+        </div>
+        <div class="meal-card" data-meal="Hot dog + nacho meal" data-price="9" onclick="selectMeal(this)">
+          <div class="check-badge"><svg viewBox="0 0 12 12"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>
+          <span class="meal-emoji">🌭🧀</span>
+          <div class="meal-name">Hot dog + nacho</div>
+          <div class="meal-desc">Both · cookie · juice</div>
+          <div class="meal-price">$9.00</div>
+        </div>
+      </div>
+      <p class="error-msg" id="meal-error">Please select a meal.</p>
+
+      <hr class="divider">
+
+      <!-- Side -->
+      <p class="card-title">Choose a side</p>
+      <div class="side-options">
+        <button class="side-btn" data-side="Orange cup" onclick="selectSide(this)">
+          <span>🍊</span> Orange cup
+        </button>
+        <button class="side-btn" data-side="Apple sauce" onclick="selectSide(this)">
+          <span>🍎</span> Apple sauce
+        </button>
+      </div>
+      <p class="error-msg" id="side-error">Please choose a side.</p>
+
+      <hr class="divider">
+
+      <!-- Always included -->
+      <p class="card-title" style="margin-bottom:10px;">Always included</p>
+      <div class="included-row" style="margin-bottom:0">
+        <div class="included-pill"><span>🍪</span> Cookie</div>
+        <div class="included-pill"><span>🧃</span> Juice</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Student info -->
+      <p class="card-title">Student information</p>
+      <div class="field-group">
+        <label for="student-name">Student's full name</label>
+        <input type="text" id="student-name" placeholder="First and last name" autocomplete="off">
+        <p class="error-msg" id="name-error">Please enter the student's name.</p>
+      </div>
+      <div class="field-group">
+        <label for="grade-level">Grade level</label>
+        <div class="select-wrap">
+          <select id="grade-level">
+            <option value="">Select grade...</option>
+            <option>Kindergarten</option>
+            <option>1st grade</option>
+            <option>2nd grade</option>
+            <option>3rd grade</option>
+            <option>4th grade</option>
+            <option>5th grade</option>
+            <option>6th grade</option>
+            <option>7th grade</option>
+            <option>8th grade</option>
+          </select>
+        </div>
+        <p class="error-msg" id="grade-error">Please select a grade level.</p>
+      </div>
+      <div class="field-group">
+        <label for="teacher">Homeroom teacher</label>
+        <input type="text" id="teacher" placeholder="Teacher's last name" autocomplete="off">
+        <p class="error-msg" id="teacher-error">Please enter the homeroom teacher.</p>
+      </div>
+
+      <button class="save-student-btn" id="save-student-btn" onclick="saveStudent()">
+        Save student &amp; add another →
+      </button>
+    </div>
+
+    <!-- Review order button -->
+    <button class="pay-btn" id="review-btn" onclick="goToSummary()" style="width:100%;margin-top:0;padding:15px;font-size:16px;border-radius:var(--radius-md);">
+      Review order →
+    </button>
+
+  </div><!-- /form-screen -->
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2: ORDER SUMMARY
+  ══════════════════════════════════════ -->
+  <div id="summary-screen">
+
+    <div class="summary-header animate-in">
+      <h2>Review your order</h2>
+      <p>Confirm everything looks right before paying</p>
+    </div>
+
+    <div id="summary-cards"></div>
+
+    <div class="order-total-card animate-in">
+      <div>
+        <div class="otc-label">Order total</div>
+        <div class="otc-count" id="otc-count">—</div>
+      </div>
+      <div class="otc-amount" id="otc-amount">—</div>
+    </div>
+
+    <div class="action-row">
+      <button class="back-btn" onclick="goBackToForm()">← Edit order</button>
+      <button class="pay-btn" id="pay-btn" onclick="processPayment()">
+        <div class="spinner"></div>
+        <span class="btn-text">Submit &amp; save orders</span>
+      </button>
+    </div>
+
+  </div><!-- /summary-screen -->
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN 3: SUCCESS
+  ══════════════════════════════════════ -->
+  <div id="success-screen">
+
+    <div class="success-wrap animate-in">
+      <div class="success-circle">
+        <svg viewBox="0 0 28 28"><polyline points="4,14 11,21 24,7"/></svg>
+      </div>
+      <h2>Orders placed!</h2>
+      <p>All student orders have been saved to Google Sheets.</p>
+    </div>
+
+    <div class="final-receipt animate-in">
+      <p class="fr-title">Order receipt</p>
+      <div id="final-receipt-rows"></div>
+      <div class="fr-total">
+        <span>Total paid</span>
+        <span id="final-total">—</span>
+      </div>
+      <div class="sheets-badge">
+        <span>📊</span> Saved to Google Sheets
+      </div>
+    </div>
+
+    <button class="new-order-btn" onclick="resetAll()">Start a new order</button>
+
+  </div><!-- /success-screen -->
+
+</div><!-- /page -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ══════════════════════════════════════
+  //  CONFIGURATION
+  // ══════════════════════════════════════
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6N0APF0uOD1V2hk_mhnbIwdapG4MDf5JlQRNbLA85nl4fvVdjw1d2O6nOPEjkIU_l/exec";
+  // ══════════════════════════════════════
+
+  if (APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
+    document.getElementById("config-banner").classList.add("hidden");
+  }
+
+  // ── State ──
+  let students = [];          // saved student orders
+  let currentStudentIndex = 0; // which tab is active (for editing)
+  let editingExisting = false;
+
+  // Current form selections
+  let formMeal = null;
+  let formSide = null;
+
+  // ── Init ──
+  addNewStudentSlot(); // start with one empty student
+
+  function addNewStudentSlot() {
+    const idx = students.length;
+    students.push({ complete: false, meal: null, side: null, name: "", grade: "", teacher: "" });
+    currentStudentIndex = idx;
+    renderTabs();
+    clearForm();
+    updateSaveBtn();
+  }
+
+  // ── Tab rendering ──
+  function renderTabs() {
+    const nav = document.getElementById("students-nav");
+    nav.innerHTML = "";
+
+    students.forEach((s, i) => {
+      const tab = document.createElement("button");
+      tab.className = "student-tab" + (s.complete ? " complete" : "") + (i === currentStudentIndex ? " active" : "");
+      tab.onclick = () => switchToStudent(i);
+
+      const label = s.name ? s.name.split(" ")[0] : `Student ${i + 1}`;
+      tab.innerHTML = `${s.complete ? '<span class="tab-check">✓</span>' : ""} ${label}`;
+
+      // Only show remove if more than 1 student
+      if (students.length > 1) {
+        const rm = document.createElement("span");
+        rm.className = "remove-tab";
+        rm.textContent = "×";
+        rm.onclick = (e) => { e.stopPropagation(); removeStudent(i); };
+        tab.appendChild(rm);
+      }
+
+      nav.appendChild(tab);
+    });
+
+    // Add student button
+    const addBtn = document.createElement("button");
+    addBtn.className = "add-student-btn";
+    addBtn.innerHTML = `<span>＋</span> Add student`;
+    addBtn.onclick = () => {
+      // Save current form state first if filled
+      const name = document.getElementById("student-name").value.trim();
+      if (name || formMeal) {
+        // auto-save if complete
+        if (canSaveCurrentStudent()) {
+          silentSave();
+        }
+      }
+      addNewStudentSlot();
+    };
+    nav.appendChild(addBtn);
+  }
+
+  function switchToStudent(idx) {
+    // Save current form if valid before switching
+    if (canSaveCurrentStudent()) silentSave();
+    currentStudentIndex = idx;
+    loadStudentIntoForm(idx);
+    renderTabs();
+    updateSaveBtn();
+  }
+
+  function removeStudent(idx) {
+    students.splice(idx, 1);
+    if (currentStudentIndex >= students.length) currentStudentIndex = students.length - 1;
+    loadStudentIntoForm(currentStudentIndex);
+    renderTabs();
+    updateSaveBtn();
+  }
+
+  function loadStudentIntoForm(idx) {
+    const s = students[idx];
+    clearForm();
+
+    // Restore meal
+    if (s.meal) {
+      document.querySelectorAll(".meal-card").forEach(c => {
+        if (c.dataset.meal === s.meal.name) {
+          c.classList.add("selected");
+          formMeal = s.meal;
+        }
+      });
+    }
+    // Restore side
+    if (s.side) {
+      document.querySelectorAll(".side-btn").forEach(b => {
+        if (b.dataset.side === s.side) {
+          b.classList.add("selected");
+          formSide = s.side;
+        }
+      });
+    }
+    document.getElementById("student-name").value  = s.name    || "";
+    document.getElementById("grade-level").value   = s.grade   || "";
+    document.getElementById("teacher").value        = s.teacher || "";
+  }
+
+  function clearForm() {
+    formMeal = null; formSide = null;
+    document.querySelectorAll(".meal-card").forEach(c => c.classList.remove("selected"));
+    document.querySelectorAll(".side-btn").forEach(b => b.classList.remove("selected"));
+    document.getElementById("student-name").value  = "";
+    document.getElementById("grade-level").value   = "";
+    document.getElementById("teacher").value        = "";
+    ["meal-error","side-error","name-error","grade-error","teacher-error"]
+      .forEach(id => document.getElementById(id).classList.remove("show"));
+  }
+
+  function canSaveCurrentStudent() {
+    const name    = document.getElementById("student-name").value.trim();
+    const grade   = document.getElementById("grade-level").value;
+    const teacher = document.getElementById("teacher").value.trim();
+    return formMeal && formSide && name && grade && teacher;
+  }
+
+  function silentSave() {
+    const name    = document.getElementById("student-name").value.trim();
+    const grade   = document.getElementById("grade-level").value;
+    const teacher = document.getElementById("teacher").value.trim();
+    students[currentStudentIndex] = {
+      complete: true, meal: formMeal, side: formSide,
+      name, grade, teacher
+    };
+    renderTabs();
+    updateSaveBtn();
+  }
+
+  function saveStudent() {
+    let valid = true;
+    if (!formMeal)  { document.getElementById("meal-error").classList.add("show");    valid = false; }
+    if (!formSide)  { document.getElementById("side-error").classList.add("show");    valid = false; }
+    const name    = document.getElementById("student-name").value.trim();
+    const grade   = document.getElementById("grade-level").value;
+    const teacher = document.getElementById("teacher").value.trim();
+    if (!name)    { document.getElementById("name-error").classList.add("show");    valid = false; }
+    else            document.getElementById("name-error").classList.remove("show");
+    if (!grade)   { document.getElementById("grade-error").classList.add("show");   valid = false; }
+    else            document.getElementById("grade-error").classList.remove("show");
+    if (!teacher) { document.getElementById("teacher-error").classList.add("show"); valid = false; }
+    else            document.getElementById("teacher-error").classList.remove("show");
+    if (!valid) return;
+
+    students[currentStudentIndex] = {
+      complete: true, meal: formMeal, side: formSide,
+      name, grade, teacher
+    };
+
+    addNewStudentSlot();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    showToast("✓ " + name.split(" ")[0] + " saved! Add the next student.", "#1D9E75");
+  }
+
+  function updateSaveBtn() {
+    const allComplete = students.filter(s => s.complete);
+    const btn = document.getElementById("review-btn");
+    if (allComplete.length > 0) {
+      btn.style.display = "block";
+      const n = allComplete.length;
+      const total = allComplete.reduce((sum, s) => sum + s.meal.price, 0);
+      btn.querySelector
+        ? btn.textContent = `Review ${n} student order${n > 1 ? "s" : ""} · $${total.toFixed(2)} →`
+        : null;
+      btn.textContent = `Review ${n} student order${n > 1 ? "s" : ""} · $${total.toFixed(2)} →`;
+    } else {
+      btn.style.display = "none";
+    }
+  }
+
+  // ── Meal / Side selection ──
+  function selectMeal(el) {
+    document.querySelectorAll(".meal-card").forEach(c => c.classList.remove("selected"));
+    el.classList.add("selected");
+    formMeal = { name: el.dataset.meal, price: parseFloat(el.dataset.price) };
+    document.getElementById("meal-error").classList.remove("show");
+  }
+
+  function selectSide(el) {
+    document.querySelectorAll(".side-btn").forEach(b => b.classList.remove("selected"));
+    el.classList.add("selected");
+    formSide = el.dataset.side;
+    document.getElementById("side-error").classList.remove("show");
+  }
+
+  // ── Navigate to Summary ──
+  function goToSummary() {
+    // Auto-save current form if complete
+    if (canSaveCurrentStudent()) silentSave();
+
+    const complete = students.filter(s => s.complete);
+    if (complete.length === 0) {
+      showToast("Please complete at least one student order.");
+      return;
+    }
+
+    // Build summary cards
+    const container = document.getElementById("summary-cards");
+    container.innerHTML = "";
+    complete.forEach(s => {
+      const card = document.createElement("div");
+      card.className = "student-order-card animate-in";
+      card.innerHTML = `
+        <div class="soc-header">
+          <div>
+            <div class="soc-name">${s.name}</div>
+            <div class="soc-meta">${s.grade} · ${s.teacher}</div>
+          </div>
+          <div class="soc-price">$${s.meal.price.toFixed(2)}</div>
+        </div>
+        <div class="soc-body">
+          <div class="soc-row"><span>Meal</span><span>${s.meal.name}</span></div>
+          <div class="soc-row"><span>Side</span><span>${s.side}</span></div>
+          <div class="soc-row"><span>Included</span><span>Cookie + juice</span></div>
+        </div>`;
+      container.appendChild(card);
+    });
+
+    const total = complete.reduce((sum, s) => sum + s.meal.price, 0);
+    const n = complete.length;
+    document.getElementById("otc-amount").textContent = "$" + total.toFixed(2);
+    document.getElementById("otc-count").textContent  = `${n} student${n > 1 ? "s" : ""}`;
+
+    // Update step bar
+    document.getElementById("step1").classList.remove("active");
+    document.getElementById("step1").classList.add("done");
+    document.getElementById("step1").querySelector(".step-dot").textContent = "✓";
+    document.getElementById("step2").classList.add("active");
+
+    showScreen("summary-screen");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function goBackToForm() {
+    document.getElementById("step1").classList.add("active");
+    document.getElementById("step1").classList.remove("done");
+    document.getElementById("step1").querySelector(".step-dot").textContent = "1";
+    document.getElementById("step2").classList.remove("active");
+    showScreen("form-screen");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // ── Process Payment / Submit ──
+  async function processPayment() {
+    if (APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+      showToast("⚠️ No Apps Script URL set — see SETUP.txt");
+      return;
+    }
+
+    const btn = document.getElementById("pay-btn");
+    btn.classList.add("loading");
+    btn.disabled = true;
+
+    const complete = students.filter(s => s.complete);
+    const total    = complete.reduce((sum, s) => sum + s.meal.price, 0);
+
+    try {
+      // Send each student order to Google Sheets
+      for (const s of complete) {
+        await fetch(APPS_SCRIPT_URL, {
+          method:  "POST",
+          mode:    "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({
+              batchId:     batchId,
+            studentName: s.name,
+            grade:       s.grade,
+            teacher:     s.teacher,
+            meal:        s.meal.name,
+            side:        s.side,
+            total:       s.meal.price
+          })
+        });
+      }
+
+      // Build final receipt
+      const rows = document.getElementById("final-receipt-rows");
+      rows.innerHTML = complete.map(s => `
+        <div class="fr-student">
+          <div class="fr-student-name">${s.name}</div>
+          <div class="fr-row"><span>Grade</span><span>${s.grade}</span></div>
+          <div class="fr-row"><span>Teacher</span><span>${s.teacher}</span></div>
+          <div class="fr-row"><span>Meal</span><span>${s.meal.name}</span></div>
+          <div class="fr-row"><span>Side</span><span>${s.side}</span></div>
+          <div class="fr-row"><span>Meal total</span><span>$${s.meal.price.toFixed(2)}</span></div>
+        </div>`).join("");
+      document.getElementById("final-total").textContent = "$" + total.toFixed(2);
+
+      // Update step bar
+      document.getElementById("step2").classList.remove("active");
+      document.getElementById("step2").classList.add("done");
+      document.getElementById("step2").querySelector(".step-dot").textContent = "✓";
+      document.getElementById("step3").classList.add("active");
+
+      showScreen("success-screen");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+    } catch (err) {
+      showToast("Connection error — please try again.");
+    } finally {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+    }
+  }
+
+  // ── Reset ──
+  function resetAll() {
+    students = [];
+    currentStudentIndex = 0;
+    formMeal = null; formSide = null;
+    // Reset step bar
+    document.getElementById("step1").classList.add("active");
+    document.getElementById("step1").classList.remove("done");
+    document.getElementById("step1").querySelector(".step-dot").textContent = "1";
+    document.getElementById("step2").classList.remove("active","done");
+    document.getElementById("step2").querySelector(".step-dot").textContent = "2";
+    document.getElementById("step3").classList.remove("active");
+    addNewStudentSlot();
+    showScreen("form-screen");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // ── Helpers ──
+  function showScreen(id) {
+    ["form-screen","summary-screen","success-screen"].forEach(s => {
+      document.getElementById(s).style.display = s === id ? "block" : "none";
+    });
+  }
+
+  function showToast(msg, bg = "#E24B4A") {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.style.background = bg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3500);
+  }
+
+  // Initial state
+  updateSaveBtn();
+</script>
+</body>
+</html>
