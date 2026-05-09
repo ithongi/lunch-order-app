@@ -593,9 +593,7 @@
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6N0APF0uOD1V2hk_mhnbIwdapG4MDf5JlQRNbLA85nl4fvVdjw1d2O6nOPEjkIU_l/exec";
   // ══════════════════════════════════════
 
-  if (APPS_SCRIPT_URL !== "PLACEHOLDER") {
-    document.getElementById("config-banner").classList.add("hidden");
-  }
+  document.getElementById("config-banner").classList.add("hidden");
 
   // ── State ──
   let students = [];          // saved student orders
@@ -850,10 +848,7 @@
 
   // ── Process Payment / Submit ──
   async function processPayment() {
-    if (APPS_SCRIPT_URL === "PLACEHOLDER") {
-      showToast("⚠️ No Apps Script URL set — see SETUP.txt");
-      return;
-    }
+    // URL is configured
 
     const btn = document.getElementById("pay-btn");
     btn.classList.add("loading");
