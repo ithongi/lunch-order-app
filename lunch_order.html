@@ -860,20 +860,19 @@
     try {
       // Send each student order to Google Sheets
       for (const s of complete) {
-        await fetch(APPS_SCRIPT_URL, {
-          method:  "POST",
-          mode:    "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({
-              batchId:     batchId,
+        const payload = encodeURIComponent(JSON.stringify({
+            batchId:     batchId,
             studentName: s.name,
             grade:       s.grade,
             teacher:     s.teacher,
             meal:        s.meal.name,
             side:        s.side,
             total:       s.meal.price
-          })
-        });
+          }));
+          await fetch(APPS_SCRIPT_URL + "?payload=" + payload, {
+            method: "GET",
+            mode:   "no-cors"
+          });
       }
 
       // Build final receipt
