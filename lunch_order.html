@@ -858,6 +858,9 @@
     const total    = complete.reduce((sum, s) => sum + s.meal.price, 0);
 
     try {
+      // Generate one batch ID shared across all students in this family order
+      const batchId = "FAM-" + Date.now().toString(36).toUpperCase();
+
       // Send each student order to Google Sheets
       for (const s of complete) {
         await fetch(APPS_SCRIPT_URL, {
