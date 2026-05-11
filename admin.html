@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lunch App — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #185FA5; --blue-light: #E6F1FB; --blue-mid: #378ADD; --blue-dark: #0C447C;
+      --green: #1D9E75; --green-light: #E1F5EE;
+      --red: #E24B4A; --red-light: #FCEBEB;
+      --amber: #D97706; --amber-light: #FEF3C7;
+      --bg: #F7F5F0; --surface: #FFFFFF; --surface2: #F1EFE8;
+      --border: rgba(0,0,0,0.09); --border-strong: rgba(0,0,0,0.18);
+      --text: #1A1A18; --text-muted: #6B6A65; --text-hint: #A09F9A;
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem 4rem; }
+    .page { max-width: 640px; margin: 0 auto; }
+
+    /* Header */
+    .site-header { text-align: center; margin-bottom: 2rem; }
+    .logo { display: inline-flex; align-items: center; gap: 10px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 40px; padding: 7px 18px 7px 12px; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+    .logo-text { font-family: 'DM Serif Display', serif; font-size: 15px; }
+    .site-header h1 { font-family: 'DM Serif Display', serif; font-size: 30px; font-weight: 400; }
+    .site-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Login */
+    #login-screen { display: block; }
+    #admin-screen { display: none; }
+    .login-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow); text-align: center; }
+    .login-card h2 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; margin-bottom: 6px; }
+    .login-card p { font-size: 14px; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .pin-inputs { display: flex; gap: 10px; justify-content: center; margin-bottom: 1.25rem; }
+    .pin-inputs input {
+      width: 52px; height: 60px; text-align: center; font-size: 24px; font-weight: 600;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .pin-inputs input:focus { outline: none; border-color: var(--blue-mid); box-shadow: 0 0 0 3px rgba(55,138,221,0.15); }
+    .pin-inputs input.error { border-color: var(--red); }
+    .pin-error { font-size: 13px; color: var(--red); margin-bottom: 1rem; display: none; }
+    .pin-error.show { display: block; }
+
+    /* Cards */
+    .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+    .card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-hint); margin-bottom: 1rem; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .card-header .card-title { margin-bottom: 0; }
+
+    /* Grade tabs */
+    .grade-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .grade-tab { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+    .grade-tab:hover { border-color: var(--border-strong); }
+    .grade-tab.active { background: var(--blue); border-color: var(--blue); color: white; }
+    .grade-tab.has-teachers { border-color: var(--green); color: var(--green); }
+    .grade-tab.has-teachers.active { background: var(--green); color: white; }
+
+    /* Teacher list */
+    .teacher-list { display: flex; flex-direction: column; gap: 8px; min-height: 40px; margin-bottom: 1rem; }
+    .teacher-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface2); border-radius: var(--radius-sm); border: 0.5px solid var(--border); }
+    .teacher-name { font-size: 14px; font-weight: 500; }
+    .teacher-grade-badge { font-size: 11px; color: var(--text-muted); background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 2px 8px; margin-left: 8px; }
+    .remove-teacher { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 18px; line-height: 1; padding: 2px 4px; border-radius: 4px; transition: color 0.15s, background 0.15s; }
+    .remove-teacher:hover { color: var(--red); background: var(--red-light); }
+    .no-teachers { font-size: 14px; color: var(--text-hint); text-align: center; padding: 1rem; font-style: italic; }
+
+    /* Add teacher */
+    .add-row { display: flex; gap: 8px; }
+    .add-row input { flex: 1; padding: 10px 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--text); transition: border-color 0.15s, box-shadow 0.15s; }
+    .add-row input:focus { outline: none; border-color: var(--blue-mid); box-shadow: 0 0 0 3px rgba(55,138,221,0.15); }
+    .add-btn { padding: 10px 18px; background: var(--blue); color: white; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+    .add-btn:hover { background: var(--blue-dark); }
+    .add-btn:disabled { background: var(--text-hint); cursor: not-allowed; }
+
+    /* Buttons */
+    .btn { padding: 11px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; border: none; }
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-primary:hover { background: var(--blue-dark); }
+    .btn-primary:disabled { background: var(--text-hint); cursor: not-allowed; }
+    .btn-outline { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
+    .btn-outline:hover { border-color: var(--border-strong); color: var(--text); }
+    .btn-danger { background: var(--red-light); color: var(--red); border: 1.5px solid var(--red); }
+    .btn-danger:hover { background: var(--red); color: white; }
+
+    /* Stats bar */
+    .stats-bar { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .stat-pill { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 13px; color: var(--text-muted); }
+    .stat-pill strong { color: var(--text); }
+
+    /* Save status */
+    .save-status { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .save-status.saving { color: var(--amber); }
+    .save-status.saved  { color: var(--green); }
+    .save-status.error  { color: var(--red); }
+
+    /* Logout */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .logout-btn { font-size: 13px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 4px 8px; border-radius: 6px; }
+    .logout-btn:hover { background: var(--surface2); color: var(--text); }
+
+    /* Spinner */
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.15); border-top-color: currentColor; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fadeUp 0.25s ease both; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--green); color: white; padding: 10px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; transition: transform 0.3s ease; z-index: 100; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .divider { border: none; border-top: 0.5px solid var(--border); margin: 1.25rem 0; }
+
+    /* Loading overlay */
+    .loading-overlay { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══════════ LOGIN ══════════ -->
+  <div id="login-screen">
+    <header class="site-header animate-in">
+      <div class="logo"><span>🍽</span><span class="logo-text">School Lunch</span></div>
+      <h1>Admin portal</h1>
+      <p>Manage teachers and grade assignments</p>
+    </header>
+
+    <div class="card login-card animate-in">
+      <h2>Enter admin PIN</h2>
+      <p>Contact your administrator if you don't have a PIN</p>
+      <div class="pin-inputs">
+        <input type="password" inputmode="numeric" maxlength="1" id="p1" oninput="pinInput(this,null,'p2')">
+        <input type="password" inputmode="numeric" maxlength="1" id="p2" oninput="pinInput(this,'p1','p3')">
+        <input type="password" inputmode="numeric" maxlength="1" id="p3" oninput="pinInput(this,'p2','p4')">
+        <input type="password" inputmode="numeric" maxlength="1" id="p4" oninput="pinInput(this,'p3',null)" onkeyup="checkPin()">
+      </div>
+      <p class="pin-error" id="pin-error">Incorrect PIN. Please try again.</p>
+      <button class="btn btn-primary" style="width:100%" onclick="checkPin()">Sign in →</button>
+    </div>
+  </div>
+
+  <!-- ══════════ ADMIN ══════════ -->
+  <div id="admin-screen">
+    <div class="top-bar animate-in">
+      <div class="logo"><span>🍽</span><span class="logo-text">School Lunch — Admin</span></div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar animate-in">
+      <div class="stat-pill">Teachers: <strong id="stat-total">—</strong></div>
+      <div class="stat-pill">Grades with teachers: <strong id="stat-grades">—</strong></div>
+    </div>
+
+    <!-- Teacher Manager -->
+    <div class="card animate-in">
+      <div class="card-header">
+        <p class="card-title">Manage teachers by grade</p>
+        <div class="save-status" id="save-status"></div>
+      </div>
+
+      <!-- Grade tabs -->
+      <div class="grade-tabs" id="grade-tabs"></div>
+
+      <!-- Teacher list for selected grade -->
+      <div class="teacher-list" id="teacher-list">
+        <div class="no-teachers">Select a grade above</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Add teacher -->
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;" id="add-label">Select a grade to add a teacher</p>
+      <div class="add-row">
+        <input type="text" id="new-teacher-name" placeholder="Teacher's last name" disabled
+          onkeydown="if(event.key==='Enter') addTeacher()"
+          oninput="document.getElementById('add-btn').disabled = !this.value.trim()">
+        <button class="add-btn" id="add-btn" onclick="addTeacher()" disabled>Add</button>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="card animate-in" style="border-color: rgba(226,75,74,0.2);">
+      <p class="card-title" style="color:var(--red)">Danger zone</p>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Clear all teachers from a specific grade, or reset the entire teacher database.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-danger" onclick="clearGrade()">Clear selected grade</button>
+        <button class="btn btn-danger" onclick="clearAll()">Clear all teachers</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ══════════════════════════════════════
+  //  CONFIGURATION
+  // ══════════════════════════════════════
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6N0APF0uOD1V2hk_mhnbIwdapG4MDf5JlQRNbLA85nl4fvVdjw1d2O6nOPEjkIU_l/exec";
+  const ADMIN_PIN       = "1234"; // ← Change this to your desired PIN
+  // ══════════════════════════════════════
+
+  const GRADES = [
+    "Pre-K","Kindergarten","1st grade","2nd grade","3rd grade",
+    "4th grade","5th grade","6th grade","7th grade","8th grade"
+  ];
+
+  let teacherDB    = {}; // { "Kindergarten": ["Smith","Jones"], ... }
+  let activeGrade  = null;
+  let saveTimer    = null;
+
+  // ── PIN Login ──
+  function pinInput(el, prevId, nextId) {
+    el.classList.remove("error");
+    document.getElementById("pin-error").classList.remove("show");
+    if (el.value && nextId) document.getElementById(nextId).focus();
+    if (!el.value && prevId) document.getElementById(prevId).focus();
+  }
+
+  function checkPin() {
+    const pin = ["p1","p2","p3","p4"].map(id => document.getElementById(id).value).join("");
+    if (pin.length < 4) return;
+    if (pin === ADMIN_PIN) {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("admin-screen").style.display = "block";
+      initAdmin();
+    } else {
+      ["p1","p2","p3","p4"].forEach(id => {
+        const el = document.getElementById(id);
+        el.value = ""; el.classList.add("error");
+      });
+      document.getElementById("pin-error").classList.add("show");
+      document.getElementById("p1").focus();
+    }
+  }
+
+  function logout() {
+    ["p1","p2","p3","p4"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("login-screen").style.display = "block";
+    document.getElementById("admin-screen").style.display = "none";
+  }
+
+  // ── Init Admin ──
+  async function initAdmin() {
+    renderGradeTabs();
+    await fetchTeachers();
+    renderGradeTabs();
+    updateStats();
+  }
+
+  // ── Fetch teachers from sheet ──
+  async function fetchTeachers() {
+    setSaveStatus("loading", "Loading...");
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL + "?action=getTeachers");
+      const data = await res.json();
+      if (data.status === "ok") {
+        teacherDB = data.teachers || {};
+        setSaveStatus("", "");
+      } else {
+        setSaveStatus("error", "Load failed");
+      }
+    } catch (err) {
+      setSaveStatus("error", "Could not connect");
+      console.error(err);
+    }
+  }
+
+  // ── Render grade tabs ──
+  function renderGradeTabs() {
+    const container = document.getElementById("grade-tabs");
+    container.innerHTML = "";
+    GRADES.forEach(g => {
+      const btn = document.createElement("button");
+      const count = (teacherDB[g] || []).length;
+      btn.className = "grade-tab" +
+        (count > 0 ? " has-teachers" : "") +
+        (g === activeGrade ? " active" : "");
+      btn.textContent = g + (count > 0 ? ` (${count})` : "");
+      btn.onclick = () => selectGrade(g);
+      container.appendChild(btn);
+    });
+  }
+
+  // ── Select grade ──
+  function selectGrade(grade) {
+    activeGrade = grade;
+    renderGradeTabs();
+    renderTeacherList();
+    const input = document.getElementById("new-teacher-name");
+    input.disabled = false;
+    input.placeholder = `Add teacher to ${grade}...`;
+    input.focus();
+    document.getElementById("add-label").textContent = `Add a teacher to ${grade}`;
+    document.getElementById("add-btn").disabled = !input.value.trim();
+  }
+
+  // ── Render teacher list for active grade ──
+  function renderTeacherList() {
+    const container = document.getElementById("teacher-list");
+    const teachers  = (teacherDB[activeGrade] || []).sort();
+    if (teachers.length === 0) {
+      container.innerHTML = `<div class="no-teachers">No teachers added for ${activeGrade} yet</div>`;
+      return;
+    }
+    container.innerHTML = teachers.map(t => `
+      <div class="teacher-row">
+        <div style="display:flex;align-items:center;">
+          <span class="teacher-name">${t}</span>
+          <span class="teacher-grade-badge">${activeGrade}</span>
+        </div>
+        <button class="remove-teacher" onclick="removeTeacher('${t.replace(/'/g,"\\'")}')">×</button>
+      </div>`).join("");
+  }
+
+  // ── Add teacher ──
+  async function addTeacher() {
+    if (!activeGrade) return;
+    const input = document.getElementById("new-teacher-name");
+    const name  = input.value.trim();
+    if (!name) return;
+
+    // Check for duplicate
+    const existing = teacherDB[activeGrade] || [];
+    if (existing.some(t => t.toLowerCase() === name.toLowerCase())) {
+      showToast("That teacher is already in this grade.", "#E24B4A");
+      return;
+    }
+
+    if (!teacherDB[activeGrade]) teacherDB[activeGrade] = [];
+    teacherDB[activeGrade].push(name);
+    input.value = "";
+    document.getElementById("add-btn").disabled = true;
+
+    renderTeacherList();
+    renderGradeTabs();
+    updateStats();
+    await saveTeachers();
+    showToast(`✓ ${name} added to ${activeGrade}`);
+  }
+
+  // ── Remove teacher ──
+  async function removeTeacher(name) {
+    if (!activeGrade) return;
+    if (!confirm(`Remove "${name}" from ${activeGrade}?`)) return;
+    teacherDB[activeGrade] = (teacherDB[activeGrade] || []).filter(t => t !== name);
+    renderTeacherList();
+    renderGradeTabs();
+    updateStats();
+    await saveTeachers();
+    showToast(`Removed ${name}`);
+  }
+
+  // ── Clear grade ──
+  async function clearGrade() {
+    if (!activeGrade) { showToast("Select a grade first.", "#E24B4A"); return; }
+    if (!confirm(`Clear ALL teachers from ${activeGrade}?`)) return;
+    teacherDB[activeGrade] = [];
+    renderTeacherList();
+    renderGradeTabs();
+    updateStats();
+    await saveTeachers();
+    showToast(`Cleared ${activeGrade}`);
+  }
+
+  // ── Clear all ──
+  async function clearAll() {
+    if (!confirm("Clear ALL teachers from ALL grades? This cannot be undone.")) return;
+    teacherDB = {};
+    activeGrade = null;
+    document.getElementById("teacher-list").innerHTML = '<div class="no-teachers">Select a grade above</div>';
+    document.getElementById("add-label").textContent  = "Select a grade to add a teacher";
+    document.getElementById("new-teacher-name").disabled = true;
+    renderGradeTabs();
+    updateStats();
+    await saveTeachers();
+    showToast("All teachers cleared.");
+  }
+
+  // ── Save to Google Sheets ──
+  async function saveTeachers() {
+    setSaveStatus("saving", "Saving...");
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method:  "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body:    JSON.stringify({ action: "saveTeachers", teachers: teacherDB })
+      });
+      setSaveStatus("saved", "✓ Saved");
+      setTimeout(() => setSaveStatus("", ""), 2500);
+    } catch (err) {
+      setSaveStatus("error", "Save failed");
+      console.error(err);
+    }
+  }
+
+  // ── Stats ──
+  function updateStats() {
+    const total  = Object.values(teacherDB).reduce((s, a) => s + a.length, 0);
+    const grades = Object.values(teacherDB).filter(a => a.length > 0).length;
+    document.getElementById("stat-total").textContent  = total;
+    document.getElementById("stat-grades").textContent = grades + " / " + GRADES.length;
+  }
+
+  // ── Save status indicator ──
+  function setSaveStatus(type, msg) {
+    const el = document.getElementById("save-status");
+    el.className = "save-status" + (type ? " " + type : "");
+    el.innerHTML = type === "loading" || type === "saving"
+      ? `<span class="spinner"></span> ${msg}`
+      : msg;
+  }
+
+  // ── Toast ──
+  function showToast(msg, bg = "#1D9E75") {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.style.background = bg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3000);
+  }
+</script>
+</body>
+</html>
