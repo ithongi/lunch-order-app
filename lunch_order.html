@@ -480,11 +480,19 @@
 
       <!-- Student info -->
       <p class="card-title">Student information</p>
-      <div class="field-group">
-        <label for="student-name">Student's full name</label>
-        <input type="text" id="student-name" placeholder="First and last name" autocomplete="off">
-        <p class="error-msg" id="name-error">Please enter the student's name.</p>
+      <div style="display:flex;gap:10px;">
+        <div class="field-group" style="flex:1;margin-bottom:0;">
+          <label for="student-first">First name</label>
+          <input type="text" id="student-first" placeholder="First name" autocomplete="off">
+          <p class="error-msg" id="first-error">Required.</p>
+        </div>
+        <div class="field-group" style="flex:1;margin-bottom:0;">
+          <label for="student-last">Last name</label>
+          <input type="text" id="student-last" placeholder="Last name" autocomplete="off">
+          <p class="error-msg" id="last-error">Required.</p>
+        </div>
       </div>
+      <div style="margin-bottom:1rem;"></div>
       <div class="field-group">
         <label for="grade-level">Grade level</label>
         <div class="select-wrap">
@@ -741,7 +749,8 @@
         }
       });
     }
-    document.getElementById("student-name").value  = s.name    || "";
+    document.getElementById("student-first").value = s.firstName || "";
+    document.getElementById("student-last").value  = s.lastName  || "";
     document.getElementById("grade-level").value   = s.grade   || "";
     if (s.grade) {
       onGradeChange(s.grade);
@@ -754,7 +763,8 @@
     formMeal = null; formSide = null;
     document.querySelectorAll(".meal-card").forEach(c => c.classList.remove("selected"));
     document.querySelectorAll(".side-btn").forEach(b => b.classList.remove("selected"));
-    document.getElementById("student-name").value  = "";
+    document.getElementById("student-first").value = "";
+    document.getElementById("student-last").value  = "";
     document.getElementById("grade-level").value   = "";
     document.getElementById("teacher").value        = "";
     ["meal-error","side-error","name-error","grade-error","teacher-error"]
@@ -762,19 +772,22 @@
   }
 
   function canSaveCurrentStudent() {
-    const name    = document.getElementById("student-name").value.trim();
+    const first   = document.getElementById("student-first").value.trim();
+    const last    = document.getElementById("student-last").value.trim();
     const grade   = document.getElementById("grade-level").value;
     const teacher = document.getElementById("teacher").value.trim();
-    return formMeal && formSide && name && grade && teacher;
+    return formMeal && formSide && first && last && grade && teacher;
   }
 
   function silentSave() {
-    const name    = document.getElementById("student-name").value.trim();
+    const first   = document.getElementById("student-first").value.trim();
+    const last    = document.getElementById("student-last").value.trim();
     const grade   = document.getElementById("grade-level").value;
     const teacher = document.getElementById("teacher").value.trim();
     students[currentStudentIndex] = {
       complete: true, meal: formMeal, side: formSide,
-      name, grade, teacher
+      firstName: first, lastName: last,
+      name: first + " " + last, grade, teacher
     };
     renderTabs();
     updateSaveBtn();
@@ -784,11 +797,14 @@
     let valid = true;
     if (!formMeal)  { document.getElementById("meal-error").classList.add("show");    valid = false; }
     if (!formSide)  { document.getElementById("side-error").classList.add("show");    valid = false; }
-    const name    = document.getElementById("student-name").value.trim();
+    const first   = document.getElementById("student-first").value.trim();
+    const last    = document.getElementById("student-last").value.trim();
     const grade   = document.getElementById("grade-level").value;
     const teacher = document.getElementById("teacher").value.trim();
-    if (!name)    { document.getElementById("name-error").classList.add("show");    valid = false; }
-    else            document.getElementById("name-error").classList.remove("show");
+    if (!first)  { document.getElementById("first-error").classList.add("show");  valid = false; }
+    else           document.getElementById("first-error").classList.remove("show");
+    if (!last)   { document.getElementById("last-error").classList.add("show");   valid = false; }
+    else           document.getElementById("last-error").classList.remove("show");
     if (!grade)   { document.getElementById("grade-error").classList.add("show");   valid = false; }
     else            document.getElementById("grade-error").classList.remove("show");
     if (!teacher) { document.getElementById("teacher-error").classList.add("show"); valid = false; }
@@ -797,7 +813,8 @@
 
     students[currentStudentIndex] = {
       complete: true, meal: formMeal, side: formSide,
-      name, grade, teacher
+      firstName: first, lastName: last,
+      name: first + " " + last, grade, teacher
     };
 
     addNewStudentSlot();
