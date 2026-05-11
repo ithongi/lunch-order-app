@@ -385,15 +385,18 @@
     showToast("All teachers cleared.");
   }
 
-  // ── Save to Google Sheets (GET with encoded params — avoids POST routing issues) ──
-  async function saveTeachers() {
+  // ── Save to Google Sheets via image beacon — most reliable cross-origin GET ──
+  function saveTeachers() {
     setSaveStatus("saving", "Saving...");
     try {
       const payload = encodeURIComponent(JSON.stringify(teacherDB));
       const url     = APPS_SCRIPT_URL + "?action=saveTeachers&payload=" + payload;
-      const res     = await fetch(url, { method: "GET", mode: "no-cors" });
-      setSaveStatus("saved", "✓ Saved");
-      setTimeout(() => setSaveStatus("", ""), 2500);
+      const beacon  = new Image();
+      beacon.onload = beacon.onerror = () => {
+        setSaveStatus("saved", "✓ Saved");
+        setTimeout(() => setSaveStatus("", ""), 2500);
+      };
+      beacon.src = url;
     } catch (err) {
       setSaveStatus("error", "Save failed");
       console.error(err);
