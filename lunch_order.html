@@ -488,8 +488,9 @@
       <div class="field-group">
         <label for="grade-level">Grade level</label>
         <div class="select-wrap">
-          <select id="grade-level">
+          <select id="grade-level" onchange="onGradeChange(this.value)">
             <option value="">Select grade...</option>
+            <option>Pre-K</option>
             <option>Kindergarten</option>
             <option>1st grade</option>
             <option>2nd grade</option>
@@ -503,10 +504,14 @@
         </div>
         <p class="error-msg" id="grade-error">Please select a grade level.</p>
       </div>
-      <div class="field-group">
+      <div class="field-group" id="teacher-group">
         <label for="teacher">Homeroom teacher</label>
-        <input type="text" id="teacher" placeholder="Teacher's last name" autocomplete="off">
-        <p class="error-msg" id="teacher-error">Please enter the homeroom teacher.</p>
+        <div class="select-wrap">
+          <select id="teacher" disabled>
+            <option value="">Select grade first...</option>
+          </select>
+        </div>
+        <p class="error-msg" id="teacher-error">Please select a homeroom teacher.</p>
       </div>
 
       <button class="save-student-btn" id="save-student-btn" onclick="saveStudent()">
@@ -594,6 +599,44 @@
   // ══════════════════════════════════════
 
   document.getElementById("config-banner").classList.add("hidden");
+
+  // ── Teacher database ──
+  let teacherDB = {};
+
+  async function loadTeachers() {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL + "?action=getTeachers");
+      const data = await res.json();
+      if (data.status === "ok" && data.teachers) {
+        teacherDB = data.teachers;
+      }
+    } catch (err) {
+      console.warn("Could not load teachers:", err);
+    }
+  }
+
+  function onGradeChange(grade) {
+    const sel = document.getElementById("teacher");
+    sel.innerHTML = "";
+    if (!grade) {
+      sel.innerHTML = '<option value="">Select grade first...</option>';
+      sel.disabled = true;
+      return;
+    }
+    const teachers = (teacherDB[grade] || []).sort();
+    if (teachers.length === 0) {
+      sel.innerHTML = '<option value="">No teachers found for this grade</option>';
+      sel.disabled = true;
+    } else {
+      sel.innerHTML = '<option value="">Select teacher...</option>' +
+        teachers.map(t => `<option value="${t}">${t}</option>`).join("");
+      sel.disabled = false;
+    }
+    document.getElementById("teacher-error").classList.remove("show");
+    document.getElementById("teacher").value = "";
+  }
+
+  loadTeachers();
 
   // ── State ──
   let students = [];          // saved student orders
@@ -700,7 +743,11 @@
     }
     document.getElementById("student-name").value  = s.name    || "";
     document.getElementById("grade-level").value   = s.grade   || "";
-    document.getElementById("teacher").value        = s.teacher || "";
+    if (s.grade) {
+      onGradeChange(s.grade);
+      // Wait a tick for options to render then set value
+      setTimeout(() => { document.getElementById("teacher").value = s.teacher || ""; }, 10);
+    }
   }
 
   function clearForm() {
