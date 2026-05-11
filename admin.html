@@ -385,15 +385,13 @@
     showToast("All teachers cleared.");
   }
 
-  // ── Save to Google Sheets ──
+  // ── Save to Google Sheets (GET with encoded params — avoids POST routing issues) ──
   async function saveTeachers() {
     setSaveStatus("saving", "Saving...");
     try {
-      await fetch(APPS_SCRIPT_URL, {
-        method:  "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body:    JSON.stringify({ action: "saveTeachers", teachers: teacherDB })
-      });
+      const payload = encodeURIComponent(JSON.stringify(teacherDB));
+      const url     = APPS_SCRIPT_URL + "?action=saveTeachers&payload=" + payload;
+      const res     = await fetch(url, { method: "GET", mode: "no-cors" });
       setSaveStatus("saved", "✓ Saved");
       setTimeout(() => setSaveStatus("", ""), 2500);
     } catch (err) {
